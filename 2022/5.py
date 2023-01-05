@@ -27,7 +27,7 @@ class Crane:
     def __init__(self):
         pass
 
-    def perform_move(self, move: list):
+    def perform_move_9000(self, move: list):
         n = move[0]
         _from = move[1]
         _to = move[2]
@@ -38,12 +38,32 @@ class Crane:
             stacks[_to].append(list(transit))
         
         self.stacks = stacks
+    
+    def perform_move_9001(self, move: list):
+        n = move[0]
+        _from = move[1]
+        _to = move[2]
+        stacks = self.stacks
+
+        transit = stacks[_from][-n:]
+        del stacks[_from][-n:]
+        stacks[_to].extend(transit)
+        
+        self.stacks = stacks
 
 
 loading = Crane()
 for move in instruction:
-    print(move)
-    loading.perform_move(move)
+    loading.perform_move_9000(move)
 # Part 1
 pprint(loading.stacks)
 # JDTMRWCQJ
+
+# Part 2
+loading = Crane()
+for move in instruction:
+    loading.perform_move_9001(move)
+
+solution = ""
+for stack in loading.stacks.keys():
+    solution += loading.stacks[stack][-1][0]
