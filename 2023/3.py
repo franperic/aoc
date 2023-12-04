@@ -61,7 +61,7 @@ for i, line in enumerate(example):
         else:
             down = "..." * 50
 
-        if verify_diagonals(up, start, end) | verify_diagonals(down, start, end):
+        if verify_diagonals(up, start, end) or verify_diagonals(down, start, end):
             numbers_vertical.append(number.group())
 
     numbers += numbers_vertical + numbers_horizontal
