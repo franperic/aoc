@@ -4,21 +4,20 @@ with open("2023/inputs/3.txt") as f:
     content = [line.rsplit()[0] for line in f]
 
 
-def get_horizontal(string):
-    pattern_ahead = re.compile("(\d+)(?=[^\w\.])")
-    pattern_behind = re.compile("(?<=[^\w\.])(\d+)")
-    ahead = re.findall(pattern_ahead, string)
-    behind = re.findall(pattern_behind, string)
-    all = ahead + behind
+def verify_horizontal(string, start, end):
+    if start == 0:
+        string = string[start : end + 1]
+    elif len(string) < end + 1:
+        string = string[start - 1 : end]
+    else:
+        string = string[start - 1 : end + 1]
 
-    pattern = re.compile("(?<=[^\w\.])(\d+)(?=[^\w\.])")
-    both = re.findall(pattern, string)
-
-    if len(both) != 0:
-        for num in both:
-            all.remove(num)
-
-    return all
+    pattern = re.compile("[^\w\.]")
+    symbol = re.findall(pattern, string)
+    if len(symbol) > 0:
+        return True
+    else:
+        return False
 
 
 def verify_diagonals(string, start, end):
@@ -36,19 +35,12 @@ def verify_diagonals(string, start, end):
         return False
 
 
-numbers = []
+schematic_engine = []
 example = content
 for i, line in enumerate(example):
-    line = example[i]
-    numbers_horizontal = get_horizontal(line)
-
     pattern = re.compile("\d+")
     check = re.finditer(pattern, line)
-    numbers_vertical = []
     for number in check:
-        if number.group() in numbers_horizontal:
-            continue
-
         start = number.start()
         end = number.end()
 
@@ -61,85 +53,73 @@ for i, line in enumerate(example):
         else:
             down = "..." * 50
 
-        if verify_diagonals(up, start, end) or verify_diagonals(down, start, end):
-            numbers_vertical.append(number.group())
+        if (
+            verify_diagonals(up, start, end)
+            or verify_diagonals(down, start, end)
+            or verify_horizontal(line, start, end)
+        ):
+            schematic_engine.append(number.group())
 
-    numbers += numbers_vertical + numbers_horizontal
+schematic_engine = [int(number) for number in schematic_engine]
+sum(schematic_engine)
 
-sum([int(number) for number in numbers])
+
+# Part 2
+def verfiy_horizontal(string, start):
+    left = string[:start]
+    right = string[start + 1 :]
+
+    pattern_left = re.compile("(\d+)$")
+    numbers_left = re.findall(pattern_left, left)
+
+    pattern_right = re.compile("^(\d+)")
+    numbers_right = re.findall(pattern_right, right)
+
+    return numbers_left + numbers_right
 
 
-# test_custom = [
-#     "467....114",
-#     "...*.....*",
-#     "..35..633.",
-#     "...*..#...",
-#     "617.300...",
-#     "...*.+.58.",
-#     "..592.....",
-#     "......755.",
-#     "....*.....",
-#     "111....111",
-# ]
+def verify_diagonal(string, start):
+    pattern = re.compile("\d+")
+    numbers = re.finditer(pattern, string)
 
-# test_steps = content[23:28]
+    adjacent = []
+    for number in numbers:
+        number_range = range(number.start(), number.end())
+        if (
+            (start in number_range)
+            or (start - 1 in number_range)
+            or (start + 1 in number_range)
+        ):
+            adjacent.append(number.group())
 
-# test = [
-#     "467..114..",
-#     "...*......",
-#     "..35..633.",
-#     "......#...",
-#     "617*......",
-#     ".....+.58.",
-#     "..592.....",
-#     "......755.",
-#     "...$.*....",
-#     ".664.598..",
-# ]
+    return adjacent
 
-# test2 = [
-#     "12.......*..",
-#     "+.........34",
-#     ".......-12..",
-#     "..78........",
-#     "..*....60...",
-#     "78..........",
-#     ".......23...",
-#     "....90*12...",
-#     "............",
-#     "2.2......12.",
-#     ".*.........*",
-#     "1.1.......56",
-# ]
 
-# test3 = [
-#     "12.......*..",
-#     "+.........34",
-#     ".......-12..",
-#     "..78........",
-#     "..*....60...",
-#     "78.........9",
-#     ".5.....23..$",
-#     "8...90*12...",
-#     "............",
-#     "2.2......12.",
-#     ".*.........*",
-#     "1.1..503+.56",
-# ]
+gear_ratios = []
+example = content
+for i, line in enumerate(example):
+    pattern = re.compile("\*")
+    check = re.finditer(pattern, line)
+    for asteriks in check:
+        start = asteriks.start()
+        end = asteriks.end()
 
-# test4 = [
-#     ".......5......",
-#     "..7*..*.....4*",
-#     "...*13*......9",
-#     ".......15.....",
-#     "..............",
-#     "..............",
-#     "..............",
-#     "..............",
-#     "..............",
-#     "..............",
-#     "21............",
-#     "...*9.........",
-# ]
+        if i != 0:
+            up = example[i - 1]
+        else:
+            up = "..." * 50
+        if i != (len(example) - 1):
+            down = example[i + 1]
+        else:
+            down = "..." * 50
 
-# test5 = ["100", "200"]
+        numbers_h = verfiy_horizontal(line, start)
+        numbers_u = verify_diagonal(up, start)
+        numbers_d = verify_diagonal(down, start)
+
+        numbers = numbers_h + numbers_u + numbers_d
+        if len(numbers) == 2:
+            gear_ratios.append(int(numbers[0]) * int(numbers[1]))
+
+
+sum(gear_ratios)
